@@ -1,0 +1,145 @@
+{
+  "name": "Xboard Notify",
+  "code": "xboard_notify",
+  "version": "0.1.0",
+  "type": "feature",
+  "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
+  "author": "Xboard-Notify contributors",
+  "require": {
+    "xboard": ">=1.0.0"
+  },
+  "config": {
+    "bark_server_url": {
+      "type": "string",
+      "default": "https://api.day.app",
+      "label": "Bark 服务器地址",
+      "placeholder": "https://api.day.app",
+      "description": "Bark 官方服务或自建 bark-server 的根地址，插件会请求 /push"
+    },
+    "bark_device_key": {
+      "type": "string",
+      "default": "",
+      "label": "Bark Device Key",
+      "placeholder": "从 Bark 推送地址中复制 Key",
+      "description": "仅填写设备 Key，不要填写完整推送 URL；请妥善保管"
+    },
+    "site_name": {
+      "type": "string",
+      "default": "",
+      "label": "通知中的站点名称",
+      "placeholder": "留空则读取 Xboard 站点名称",
+      "description": "用于区分多个 Xboard 实例"
+    },
+    "offline_after_minutes": {
+      "type": "number",
+      "default": 5,
+      "label": "离线告警时间（分钟）",
+      "description": "服务器最后心跳超过此时间后发送离线告警，最小 1 分钟"
+    },
+    "load_stale_after_minutes": {
+      "type": "number",
+      "default": 5,
+      "label": "负载数据过期时间（分钟）",
+      "description": "服务器在线但负载数据长时间未更新时告警，最小 1 分钟"
+    },
+    "notify_load_stale": {
+      "type": "boolean",
+      "default": true,
+      "label": "负载数据过期时告警",
+      "description": "关闭后不单独发送负载数据过期告警"
+    },
+    "resource_sustain_minutes": {
+      "type": "number",
+      "default": 3,
+      "label": "资源异常持续时间（分钟）",
+      "description": "资源连续超过阈值达到此时间后才告警；设为 0 表示立即告警"
+    },
+    "cpu_threshold_percent": {
+      "type": "number",
+      "default": 90,
+      "label": "CPU 告警阈值（%）",
+      "description": "设为 0 可关闭 CPU 告警"
+    },
+    "memory_threshold_percent": {
+      "type": "number",
+      "default": 90,
+      "label": "内存告警阈值（%）",
+      "description": "设为 0 可关闭内存告警"
+    },
+    "swap_threshold_percent": {
+      "type": "number",
+      "default": 90,
+      "label": "Swap 告警阈值（%）",
+      "description": "设为 0 可关闭 Swap 告警；没有 Swap 的服务器会自动跳过"
+    },
+    "disk_threshold_percent": {
+      "type": "number",
+      "default": 90,
+      "label": "磁盘告警阈值（%）",
+      "description": "设为 0 可关闭磁盘告警"
+    },
+    "repeat_interval_minutes": {
+      "type": "number",
+      "default": 60,
+      "label": "持续异常重复提醒间隔（分钟）",
+      "description": "异常未恢复时按此间隔重复提醒；设为 0 表示同一次异常只提醒一次"
+    },
+    "recovery_notify": {
+      "type": "boolean",
+      "default": true,
+      "label": "发送恢复通知",
+      "description": "已告警的异常恢复后发送一次通知"
+    },
+    "monitor_disabled_servers": {
+      "type": "boolean",
+      "default": false,
+      "label": "监控已停用服务器",
+      "description": "默认仅监控服务器管理中已启用的服务器"
+    },
+    "ignored_machine_ids": {
+      "type": "json",
+      "default": [],
+      "label": "忽略的服务器 ID",
+      "placeholder": "[1, 2]",
+      "description": "JSON 数组；列表中的服务器不会参与监控"
+    },
+    "bark_group": {
+      "type": "string",
+      "default": "Xboard Monitor",
+      "label": "Bark 通知分组",
+      "description": "同一分组的通知会在 Bark 中归类"
+    },
+    "bark_level": {
+      "type": "string",
+      "default": "timeSensitive",
+      "label": "Bark 通知级别",
+      "description": "可选 active、timeSensitive、passive 或 critical"
+    },
+    "bark_sound": {
+      "type": "string",
+      "default": "",
+      "label": "Bark 铃声",
+      "placeholder": "留空使用 Bark 默认铃声",
+      "description": "填写 Bark 支持的铃声名称"
+    },
+    "notification_url": {
+      "type": "string",
+      "default": "",
+      "label": "点击通知跳转地址",
+      "placeholder": "https://xboard.example.com/admin",
+      "description": "留空时点击 Bark 通知不跳转"
+    },
+    "archive_notifications": {
+      "type": "boolean",
+      "default": true,
+      "label": "在 Bark 中保存通知",
+      "description": "开启后通知会进入 Bark 历史记录"
+    },
+    "request_timeout_seconds": {
+      "type": "number",
+      "default": 10,
+      "label": "Bark 请求超时（秒）",
+      "description": "允许范围 2 到 30 秒"
+    }
+  }
+}
