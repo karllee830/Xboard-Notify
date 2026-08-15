@@ -75,6 +75,11 @@ docker compose exec xboard php artisan xboard-notify:test
 
 “保存 Bark 配置后发送测试通知”默认开启。只有 Bark 服务器地址、Device Key、通知分组、级别、铃声、跳转地址、存档设置或请求超时发生变化时才会发送；修改监控阈值等无关配置不会触发。若不需要自动测试，可在插件配置中关闭该开关。
 
+“Bark 通知级别”可直接在配置页面选择：
+
+- 时效性通知（`timeSensitive`，默认）：适合常规服务器异常提醒。
+- 重要警告（`critical`）：用于需要更强提醒效果的严重告警。
+
 ## 告警规则
 
 | 规则 | 默认值 | 行为 |

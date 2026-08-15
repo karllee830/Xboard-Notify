@@ -1,7 +1,7 @@
 {
   "name": "Xboard Notify",
   "code": "xboard_notify",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "feature",
   "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
   "author": "Xboard-Notify contributors",
@@ -116,10 +116,20 @@
       "description": "同一分组的通知会在 Bark 中归类"
     },
     "bark_level": {
-      "type": "string",
+      "type": "select",
       "default": "timeSensitive",
       "label": "Bark 通知级别",
-      "description": "可选 active、timeSensitive、passive 或 critical"
+      "description": "选择 Bark 推送使用的重要程度",
+      "options": [
+        {
+          "label": "时效性通知（timeSensitive）",
+          "value": "timeSensitive"
+        },
+        {
+          "label": "重要警告（critical）",
+          "value": "critical"
+        }
+      ]
     },
     "bark_sound": {
       "type": "string",

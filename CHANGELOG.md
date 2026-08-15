@@ -2,6 +2,12 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.3.0] - 2026-08-15
+
+### Changed
+
+- Bark 通知级别改为下拉选择，可选“重要警告（critical）”或“时效性通知（timeSensitive）”。
+
 ## [0.2.0] - 2026-08-15
 
 ### Added
