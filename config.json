@@ -1,7 +1,7 @@
 {
   "name": "Xboard Notify",
   "code": "xboard_notify",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "feature",
   "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
   "author": "Xboard-Notify contributors",
@@ -22,6 +22,12 @@
       "label": "Bark Device Key",
       "placeholder": "从 Bark 推送地址中复制 Key",
       "description": "仅填写设备 Key，不要填写完整推送 URL；请妥善保管"
+    },
+    "test_on_bark_config_update": {
+      "type": "boolean",
+      "default": true,
+      "label": "保存 Bark 配置后发送测试通知",
+      "description": "Bark 相关配置发生变化且保存成功后，自动使用新配置发送一次测试通知"
     },
     "site_name": {
       "type": "string",
