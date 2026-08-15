@@ -1,5 +1,8 @@
 # Xboard Notify
 
+[![CI](https://github.com/karllee830/Xboard-Notify/actions/workflows/ci.yml/badge.svg)](https://github.com/karllee830/Xboard-Notify/actions/workflows/ci.yml)
+[![Package](https://github.com/karllee830/Xboard-Notify/actions/workflows/package.yml/badge.svg)](https://github.com/karllee830/Xboard-Notify/actions/workflows/package.yml)
+
 为 [cedar2025/Xboard](https://github.com/cedar2025/Xboard) 编写的 Bark 服务器监控插件。插件读取“节点管理 → 服务器管理”中的心跳和负载数据，在服务器持续离线、负载数据停止更新或资源占用异常时推送通知，并在恢复后通知。
 
 ## 功能
@@ -37,7 +40,7 @@
 
 ```bash
 cd /path/to/Xboard/plugins
-git clone https://github.com/YOUR_ACCOUNT/Xboard-Notify.git XboardNotify
+git clone https://github.com/karllee830/Xboard-Notify.git XboardNotify
 ```
 
 然后在 Xboard 插件管理页面完成安装、配置和启用。目录名必须为 `XboardNotify`，插件代码为 `xboard_notify`。
@@ -107,6 +110,19 @@ make package
 ```
 
 `make package` 使用当前 Git `HEAD` 生成 `dist/xboard-notify-vX.Y.Z.zip`，因此打包前应先提交需要发布的修改。开发文件和测试不会进入插件包。
+
+### GitHub Actions 自动打包
+
+- 推送到 `main`：自动运行测试，并生成保留 30 天的 ZIP Artifact。
+- 手动运行 `Package` 工作流：按当前 `config.json` 版本生成 ZIP Artifact。
+- 推送 `v*` 标签：校验标签与 `config.json` 版本一致，自动创建 GitHub Release，并上传 ZIP 和 SHA-256 文件。
+
+发布新版本时，先更新 `config.json` 和 `CHANGELOG.md`，提交后创建对应标签：
+
+```bash
+git tag v0.2.0
+git push origin main v0.2.0
+```
 
 ## 隐私与安全
 

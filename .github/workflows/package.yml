@@ -1,0 +1,79 @@
+name: Package
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Build plugin ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Read and validate version
+        id: metadata
+        shell: bash
+        run: |
+          version="$(jq -r '.version' config.json)"
+          if [[ -z "$version" || "$version" == "null" ]]; then
+            echo 'config.json does not contain a valid version' >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_REF_TYPE" == 'tag' && "$GITHUB_REF_NAME" != "v${version}" ]]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match config.json version v${version}" >&2
+            exit 1
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "package=xboard-notify-v${version}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Build installable package
+        shell: bash
+        run: |
+          mkdir -p dist
+          git archive \
+            --format=zip \
+            --prefix=XboardNotify/ \
+            --output="dist/${{ steps.metadata.outputs.package }}" \
+            HEAD
+          cd dist
+          sha256sum "${{ steps.metadata.outputs.package }}" > "${{ steps.metadata.outputs.package }}.sha256"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: xboard-notify-v${{ steps.metadata.outputs.version }}
+          path: |
+            dist/${{ steps.metadata.outputs.package }}
+            dist/${{ steps.metadata.outputs.package }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ steps.metadata.outputs.package }}
+        shell: bash
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "dist/${PACKAGE}" "dist/${PACKAGE}.sha256" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              "dist/${PACKAGE}" \
+              "dist/${PACKAGE}.sha256" \
+              --verify-tag \
+              --generate-notes \
+              --title "Xboard Notify ${GITHUB_REF_NAME}"
+          fi
