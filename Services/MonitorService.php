@@ -181,21 +181,23 @@ final class MonitorService
             if (!$this->toBool($this->config['recovery_notify'] ?? true)) {
                 AlertState::query()->whereIn('id', $recoveryStates->pluck('id'))->delete();
             } else {
-                try {
-                    $this->sendRecovery(
-                        $machine,
-                        $recoveryStates,
-                        $now,
-                        $this->recoveryNotificationLevel()
-                    );
-                    AlertState::query()->whereIn('id', $recoveryStates->pluck('id'))->delete();
-                    $result['recoveries_sent'] = 1;
-                } catch (Throwable $exception) {
-                    $result['errors'][] = sprintf('服务器 #%d 恢复通知推送失败：%s', $machine->id, $exception->getMessage());
-                    Log::warning('Xboard Notify Bark recovery failed', [
-                        'machine_id' => $machine->id,
-                        'message' => $exception->getMessage(),
-                    ]);
+                foreach ($this->groupStatesByNotificationType($recoveryStates) as $states) {
+                    try {
+                        $this->sendRecovery(
+                            $machine,
+                            $states,
+                            $now,
+                            $this->recoveryNotificationLevel()
+                        );
+                        AlertState::query()->whereIn('id', $states->pluck('id'))->delete();
+                        $result['recoveries_sent']++;
+                    } catch (Throwable $exception) {
+                        $result['errors'][] = sprintf('服务器 #%d 恢复通知推送失败：%s', $machine->id, $exception->getMessage());
+                        Log::warning('Xboard Notify Bark recovery failed', [
+                            'machine_id' => $machine->id,
+                            'message' => $exception->getMessage(),
+                        ]);
+                    }
                 }
             }
         }

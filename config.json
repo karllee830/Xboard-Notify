@@ -1,7 +1,7 @@
 {
   "name": "Xboard Notify",
   "code": "xboard_notify",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "feature",
   "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
   "author": "Xboard-Notify contributors",
@@ -153,7 +153,7 @@
       "type": "select",
       "default": "active",
       "label": "恢复通知级别",
-      "description": "服务器离线或负载过载恢复时合并为一条通知，并使用此 Bark 级别",
+      "description": "服务器离线或负载过载恢复通知分别发送，并统一使用此 Bark 级别",
       "options": [
         {
           "label": "普通通知（active）",
