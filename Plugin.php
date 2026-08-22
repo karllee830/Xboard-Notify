@@ -65,7 +65,8 @@ final class Plugin extends AbstractPlugin
 
         (new BarkClient($config))->send(
             sprintf('【%s】Bark 测试成功', $siteName !== '' ? $siteName : 'Xboard'),
-            "Xboard Notify 已正确连接 Bark，配置已保存。\n发送时间：" . now()->format('Y-m-d H:i:s')
+            "Xboard Notify 已正确连接 Bark，配置已保存。\n发送时间：" . now()->format('Y-m-d H:i:s'),
+            'active'
         );
     }
 

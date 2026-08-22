@@ -1,7 +1,7 @@
 {
   "name": "Xboard Notify",
   "code": "xboard_notify",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "feature",
   "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
   "author": "Xboard-Notify contributors",
@@ -27,7 +27,7 @@
       "type": "boolean",
       "default": true,
       "label": "保存 Bark 配置后发送测试通知",
-      "description": "Bark 相关配置发生变化且保存成功后，自动使用新配置发送一次测试通知"
+      "description": "Bark 相关配置发生变化且保存成功后，自动使用新配置发送一次普通（active）测试通知"
     },
     "site_name": {
       "type": "string",
