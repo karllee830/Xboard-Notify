@@ -30,11 +30,14 @@ final class HealthEvaluatorTest extends TestCase
         ]);
 
         self::assertArrayNotHasKey('offline', $this->issues($healthy));
-        self::assertArrayHasKey('offline', $this->issues($offline));
+        $report = $this->evaluator->evaluate($offline, $this->config(), self::NOW);
+
+        self::assertSame(['offline'], array_keys($report['issues']));
+        self::assertNotContains('load_stale', array_keys($report['issues']));
     }
 
     #[Test]
-    public function it_reports_stale_load_and_does_not_use_old_resource_values(): void
+    public function it_does_not_notify_for_stale_load_or_use_old_resource_values(): void
     {
         $machine = $this->machine([
             'load_status' => [
@@ -47,8 +50,9 @@ final class HealthEvaluatorTest extends TestCase
         $report = $this->evaluator->evaluate($machine, $this->config(), self::NOW);
         $issues = $report['issues'];
 
-        self::assertSame(['load_stale'], array_keys($issues));
+        self::assertSame([], $issues);
         self::assertContains('cpu', $report['suppressed_conditions']);
+        self::assertContains('load_stale', $report['discarded_conditions']);
     }
 
     #[Test]
@@ -136,7 +140,6 @@ final class HealthEvaluatorTest extends TestCase
         return array_replace([
             'offline_after_minutes' => 5,
             'load_stale_after_minutes' => 5,
-            'notify_load_stale' => true,
             'resource_sustain_minutes' => 3,
             'cpu_threshold_percent' => 90,
             'memory_threshold_percent' => 90,

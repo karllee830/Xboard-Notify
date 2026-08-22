@@ -1,7 +1,7 @@
 {
   "name": "Xboard Notify",
   "code": "xboard_notify",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "feature",
   "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
   "author": "Xboard-Notify contributors",
@@ -45,14 +45,8 @@
     "load_stale_after_minutes": {
       "type": "number",
       "default": 5,
-      "label": "负载数据过期时间（分钟）",
-      "description": "服务器在线但负载数据长时间未更新时告警，最小 1 分钟"
-    },
-    "notify_load_stale": {
-      "type": "boolean",
-      "default": true,
-      "label": "负载数据过期时告警",
-      "description": "关闭后不单独发送负载数据过期告警"
+      "label": "负载数据有效期（分钟）",
+      "description": "超过此时间未更新时不使用旧数据发送负载过载通知，也不会单独推送数据未更新通知；最小 1 分钟"
     },
     "resource_sustain_minutes": {
       "type": "number",
@@ -115,12 +109,36 @@
       "label": "Bark 通知分组",
       "description": "同一分组的通知会在 Bark 中归类"
     },
-    "bark_level": {
+    "bark_offline_level": {
       "type": "select",
       "default": "timeSensitive",
-      "label": "Bark 通知级别",
-      "description": "选择 Bark 推送使用的重要程度",
+      "label": "服务器离线/恢复通知级别",
+      "description": "选择服务器离线和恢复通知使用的 Bark 级别",
       "options": [
+        {
+          "label": "普通通知（active）",
+          "value": "active"
+        },
+        {
+          "label": "时效性通知（timeSensitive）",
+          "value": "timeSensitive"
+        },
+        {
+          "label": "重要警告（critical）",
+          "value": "critical"
+        }
+      ]
+    },
+    "bark_load_level": {
+      "type": "select",
+      "default": "timeSensitive",
+      "label": "负载过载通知级别",
+      "description": "选择 CPU、内存、Swap 或磁盘过载及其恢复通知使用的 Bark 级别",
+      "options": [
+        {
+          "label": "普通通知（active）",
+          "value": "active"
+        },
         {
           "label": "时效性通知（timeSensitive）",
           "value": "timeSensitive"

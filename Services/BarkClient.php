@@ -19,7 +19,7 @@ final class BarkClient
         return trim((string) ($this->config['bark_device_key'] ?? '')) !== '';
     }
 
-    public function send(string $title, string $body): void
+    public function send(string $title, string $body, ?string $level = null): void
     {
         $deviceKey = trim((string) ($this->config['bark_device_key'] ?? ''));
         if ($deviceKey === '') {
@@ -36,7 +36,7 @@ final class BarkClient
             'title' => $title,
             'body' => $body,
             'group' => trim((string) ($this->config['bark_group'] ?? 'Xboard Monitor')),
-            'level' => $this->level(),
+            'level' => $this->level($level),
         ];
 
         $sound = trim((string) ($this->config['bark_sound'] ?? ''));
@@ -67,9 +67,9 @@ final class BarkClient
         }
     }
 
-    private function level(): string
+    private function level(?string $level): string
     {
-        $level = trim((string) ($this->config['bark_level'] ?? 'timeSensitive'));
+        $level = trim((string) ($level ?? $this->config['bark_offline_level'] ?? $this->config['bark_level'] ?? 'timeSensitive'));
 
         return in_array($level, ['active', 'timeSensitive', 'passive', 'critical'], true)
             ? $level

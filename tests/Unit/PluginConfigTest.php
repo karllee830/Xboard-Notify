@@ -12,7 +12,7 @@ final class PluginConfigTest extends TestCase
 {
     /** @throws JsonException */
     #[Test]
-    public function bark_level_is_a_select_with_supported_notification_levels(): void
+    public function bark_notification_levels_are_separate_selects_with_normal_level(): void
     {
         $config = json_decode(
             (string) file_get_contents(dirname(__DIR__, 2) . '/config.json'),
@@ -20,13 +20,19 @@ final class PluginConfigTest extends TestCase
             512,
             JSON_THROW_ON_ERROR
         );
-        $field = $config['config']['bark_level'];
+        $offlineField = $config['config']['bark_offline_level'];
+        $loadField = $config['config']['bark_load_level'];
 
-        self::assertSame('select', $field['type']);
-        self::assertSame('timeSensitive', $field['default']);
-        self::assertSame(
-            ['timeSensitive', 'critical'],
-            array_column($field['options'], 'value')
-        );
+        foreach ([$offlineField, $loadField] as $field) {
+            self::assertSame('select', $field['type']);
+            self::assertSame('timeSensitive', $field['default']);
+            self::assertSame(
+                ['active', 'timeSensitive', 'critical'],
+                array_column($field['options'], 'value')
+            );
+        }
+
+        self::assertArrayNotHasKey('bark_level', $config['config']);
+        self::assertArrayNotHasKey('notify_load_stale', $config['config']);
     }
 }

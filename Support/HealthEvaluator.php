@@ -11,7 +11,8 @@ final class HealthEvaluator
      * @param array<string, mixed> $config
      * @return array{
      *     issues: array<string, array<string, int|string|float>>,
-     *     suppressed_conditions: array<int, string>
+     *     suppressed_conditions: array<int, string>,
+     *     discarded_conditions: array<int, string>
      * }
      */
     public function evaluate(array $machine, array $config, int $now): array
@@ -35,6 +36,7 @@ final class HealthEvaluator
                     ),
                 ],
                 'suppressed_conditions' => ['load_stale', 'cpu', 'memory', 'swap', 'disk'],
+                'discarded_conditions' => ['load_stale'],
             ];
         }
 
@@ -44,27 +46,12 @@ final class HealthEvaluator
         $loadStaleAfter = max(1, (int) ($config['load_stale_after_minutes'] ?? 5)) * 60;
 
         if ($loadBaseline > 0 && ($now - $loadBaseline) >= $loadStaleAfter) {
-            if ($this->toBool($config['notify_load_stale'] ?? true)) {
-                $elapsed = max(0, $now - $loadBaseline);
-
-                return [
-                    'issues' => [
-                        'load_stale' => $this->issue(
-                            'load_stale',
-                            '负载数据过期',
-                            sprintf('负载数据已 %s 未更新，最后上报于 %s', $this->formatDuration($elapsed), $this->formatTime($loadBaseline)),
-                            $loadBaseline,
-                            0
-                        ),
-                    ],
-                    'suppressed_conditions' => ['cpu', 'memory', 'swap', 'disk'],
-                ];
-            }
-
-            // Never alert from stale resource values, even when stale-data notifications are disabled.
+            // Never alert from stale resource values. Stale load data is not a
+            // notification condition by itself.
             return [
                 'issues' => [],
                 'suppressed_conditions' => ['cpu', 'memory', 'swap', 'disk'],
+                'discarded_conditions' => ['load_stale'],
             ];
         }
 
@@ -72,6 +59,7 @@ final class HealthEvaluator
             return [
                 'issues' => [],
                 'suppressed_conditions' => ['cpu', 'memory', 'swap', 'disk'],
+                'discarded_conditions' => ['load_stale'],
             ];
         }
 
@@ -98,6 +86,7 @@ final class HealthEvaluator
         return [
             'issues' => $issues,
             'suppressed_conditions' => [],
+            'discarded_conditions' => ['load_stale'],
         ];
     }
 
@@ -179,15 +168,6 @@ final class HealthEvaluator
     private function threshold(array $config, string $key, float $default): float
     {
         return min(100.0, max(0.0, (float) ($config[$key] ?? $default)));
-    }
-
-    private function toBool(mixed $value): bool
-    {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
     }
 
     private function formatDuration(int $seconds): string

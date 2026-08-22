@@ -27,6 +27,21 @@ final class BarkConfigChangeDetectorTest extends TestCase
     }
 
     #[Test]
+    public function it_detects_changes_to_either_notification_level(): void
+    {
+        $before = [
+            'bark_offline_level' => 'timeSensitive',
+            'bark_load_level' => 'timeSensitive',
+        ];
+        $after = [
+            'bark_offline_level' => 'critical',
+            'bark_load_level' => 'active',
+        ];
+
+        self::assertTrue($this->detector->hasChanged($before, $after));
+    }
+
+    #[Test]
     public function it_ignores_unrelated_monitoring_changes(): void
     {
         $before = ['bark_device_key' => 'key', 'cpu_threshold_percent' => 90];

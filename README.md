@@ -3,14 +3,14 @@
 [![CI](https://github.com/karllee830/Xboard-Notify/actions/workflows/ci.yml/badge.svg)](https://github.com/karllee830/Xboard-Notify/actions/workflows/ci.yml)
 [![Package](https://github.com/karllee830/Xboard-Notify/actions/workflows/package.yml/badge.svg)](https://github.com/karllee830/Xboard-Notify/actions/workflows/package.yml)
 
-为 [cedar2025/Xboard](https://github.com/cedar2025/Xboard) 编写的 Bark 服务器监控插件。插件读取“节点管理 → 服务器管理”中的心跳和负载数据，在服务器持续离线、负载数据停止更新或资源占用异常时推送通知，并在恢复后通知。
+为 [cedar2025/Xboard](https://github.com/cedar2025/Xboard) 编写的 Bark 服务器监控插件。插件读取“节点管理 → 服务器管理”中的心跳和负载数据，在服务器持续离线或资源占用异常时推送通知，并在恢复后通知。
 
 ## 功能
 
 - 每分钟检查所有已启用服务器，不需要修改 Xboard 核心代码。
 - 离线持续时间可配置，避免网络瞬断造成误报。
 - 监控 CPU、内存、Swap、磁盘，阈值和异常持续时间均可配置。
-- 监控负载数据是否停止更新，且不会使用过期数据制造资源告警。
+- 负载数据停止更新时不会使用过期数据制造资源告警，也不会单独推送“负载数据未更新”通知。
 - 支持 Bark 官方服务和自建 bark-server。
 - Bark 相关配置保存成功后默认发送测试通知，并在配置页面显示发送结果。
 - 支持持续异常重复提醒、恢复通知、服务器忽略列表。
@@ -73,10 +73,11 @@ Docker 部署时在 Xboard 容器内执行，例如：
 docker compose exec xboard php artisan xboard-notify:test
 ```
 
-“保存 Bark 配置后发送测试通知”默认开启。只有 Bark 服务器地址、Device Key、通知分组、级别、铃声、跳转地址、存档设置或请求超时发生变化时才会发送；修改监控阈值等无关配置不会触发。若不需要自动测试，可在插件配置中关闭该开关。
+“保存 Bark 配置后发送测试通知”默认开启。只有 Bark 服务器地址、Device Key、通知分组、服务器离线/恢复级别、负载过载级别、铃声、跳转地址、存档设置或请求超时发生变化时才会发送；修改监控阈值等无关配置不会触发。若不需要自动测试，可在插件配置中关闭该开关。
 
-“Bark 通知级别”可直接在配置页面选择：
+服务器离线/恢复和负载过载通知可以分别选择 Bark 级别：
 
+- 普通通知（`active`）：普通推送。
 - 时效性通知（`timeSensitive`，默认）：适合常规服务器异常提醒。
 - 重要警告（`critical`）：用于需要更强提醒效果的严重告警。
 
@@ -85,13 +86,13 @@ docker compose exec xboard php artisan xboard-notify:test
 | 规则 | 默认值 | 行为 |
 | --- | ---: | --- |
 | 离线时间 | 5 分钟 | 最后心跳超过该时间后告警 |
-| 负载数据过期 | 5 分钟 | 服务器仍有心跳但负载停止更新时告警 |
+| 负载数据有效期 | 5 分钟 | 超过该时间未更新时不使用旧数据发送资源告警；不会单独推送数据未更新通知 |
 | 资源异常持续时间 | 3 分钟 | CPU/内存/Swap/磁盘连续超阈值后告警 |
 | 各资源阈值 | 90% | 设为 `0` 可单独关闭该资源告警 |
 | 重复提醒间隔 | 60 分钟 | 持续异常按间隔提醒；设为 `0` 只提醒一次 |
 | 恢复通知 | 开启 | 已发送过告警的状态恢复后通知一次 |
 
-服务器离线时只发送离线告警；负载数据过期时只发送数据过期告警，不会继续根据旧数据判断 CPU、内存或磁盘状态。
+服务器离线时只发送离线告警；负载数据过期时不会发送数据过期告警，也不会继续根据旧数据判断 CPU、内存或磁盘状态。恢复通知使用对应类别的 Bark 级别。
 
 ## 手动检查
 

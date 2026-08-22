@@ -105,6 +105,13 @@ final class MonitorService
         $issues = $health['issues'];
         $suppressedConditions = array_fill_keys($health['suppressed_conditions'], true);
 
+        if ($health['discarded_conditions'] !== []) {
+            AlertState::query()
+                ->where('machine_id', $machine->id)
+                ->whereIn('condition', $health['discarded_conditions'])
+                ->delete();
+        }
+
         /** @var Collection<int, AlertState> $existingStates */
         $existingStates = AlertState::query()
             ->where('machine_id', $machine->id)
@@ -149,13 +156,18 @@ final class MonitorService
             'errors' => [],
         ];
 
-        if ($alertStates->isNotEmpty()) {
+        foreach ($this->groupStatesByNotificationType($alertStates) as $notificationType => $states) {
             try {
-                $this->sendAlert($machine, $alertStates, $now);
+                $this->sendAlert(
+                    $machine,
+                    $states,
+                    $now,
+                    $this->notificationLevel((string) $notificationType)
+                );
                 AlertState::query()
-                    ->whereIn('id', $alertStates->pluck('id'))
+                    ->whereIn('id', $states->pluck('id'))
                     ->update(['last_notified_at' => $now, 'updated_at' => now()]);
-                $result['alerts_sent'] = 1;
+                $result['alerts_sent']++;
             } catch (Throwable $exception) {
                 $result['errors'][] = sprintf('服务器 #%d 告警推送失败：%s', $machine->id, $exception->getMessage());
                 Log::warning('Xboard Notify Bark alert failed', [
@@ -169,16 +181,23 @@ final class MonitorService
             if (!$this->toBool($this->config['recovery_notify'] ?? true)) {
                 AlertState::query()->whereIn('id', $recoveryStates->pluck('id'))->delete();
             } else {
-                try {
-                    $this->sendRecovery($machine, $recoveryStates, $now);
-                    AlertState::query()->whereIn('id', $recoveryStates->pluck('id'))->delete();
-                    $result['recoveries_sent'] = 1;
-                } catch (Throwable $exception) {
-                    $result['errors'][] = sprintf('服务器 #%d 恢复通知推送失败：%s', $machine->id, $exception->getMessage());
-                    Log::warning('Xboard Notify Bark recovery failed', [
-                        'machine_id' => $machine->id,
-                        'message' => $exception->getMessage(),
-                    ]);
+                foreach ($this->groupStatesByNotificationType($recoveryStates) as $notificationType => $states) {
+                    try {
+                        $this->sendRecovery(
+                            $machine,
+                            $states,
+                            $now,
+                            $this->notificationLevel((string) $notificationType)
+                        );
+                        AlertState::query()->whereIn('id', $states->pluck('id'))->delete();
+                        $result['recoveries_sent']++;
+                    } catch (Throwable $exception) {
+                        $result['errors'][] = sprintf('服务器 #%d 恢复通知推送失败：%s', $machine->id, $exception->getMessage());
+                        Log::warning('Xboard Notify Bark recovery failed', [
+                            'machine_id' => $machine->id,
+                            'message' => $exception->getMessage(),
+                        ]);
+                    }
                 }
             }
         }
@@ -198,7 +217,7 @@ final class MonitorService
     }
 
     /** @param Collection<int, AlertState> $states */
-    private function sendAlert(ServerMachine $machine, Collection $states, int $now): void
+    private function sendAlert(ServerMachine $machine, Collection $states, int $now, string $level): void
     {
         $lines = $states
             ->map(static fn (AlertState $state): string => '• ' . $state->last_summary)
@@ -206,12 +225,13 @@ final class MonitorService
 
         $this->bark->send(
             sprintf('【%s】服务器告警：%s', $this->siteName(), $machine->name),
-            sprintf("服务器：%s (#%d)\n时间：%s\n异常：\n%s", $machine->name, $machine->id, date('Y-m-d H:i:s', $now), $lines)
+            sprintf("服务器：%s (#%d)\n时间：%s\n异常：\n%s", $machine->name, $machine->id, date('Y-m-d H:i:s', $now), $lines),
+            $level
         );
     }
 
     /** @param Collection<int, AlertState> $states */
-    private function sendRecovery(ServerMachine $machine, Collection $states, int $now): void
+    private function sendRecovery(ServerMachine $machine, Collection $states, int $now, string $level): void
     {
         $lines = $states
             ->map(function (AlertState $state) use ($now): string {
@@ -222,8 +242,30 @@ final class MonitorService
 
         $this->bark->send(
             sprintf('【%s】服务器恢复：%s', $this->siteName(), $machine->name),
-            sprintf("服务器：%s (#%d)\n时间：%s\n已恢复：\n%s", $machine->name, $machine->id, date('Y-m-d H:i:s', $now), $lines)
+            sprintf("服务器：%s (#%d)\n时间：%s\n已恢复：\n%s", $machine->name, $machine->id, date('Y-m-d H:i:s', $now), $lines),
+            $level
         );
+    }
+
+    /** @param Collection<int, AlertState> $states */
+    private function groupStatesByNotificationType(Collection $states): Collection
+    {
+        return $states->groupBy(
+            fn (AlertState $state): string => $this->notificationType((string) $state->condition)
+        );
+    }
+
+    private function notificationType(string $condition): string
+    {
+        return $condition === 'offline' ? 'offline' : 'load';
+    }
+
+    private function notificationLevel(string $notificationType): string
+    {
+        $key = $notificationType === 'offline' ? 'bark_offline_level' : 'bark_load_level';
+        $level = trim((string) ($this->config[$key] ?? $this->config['bark_level'] ?? 'timeSensitive'));
+
+        return $level !== '' ? $level : 'timeSensitive';
     }
 
     /** @param Collection<int, ServerMachine> $machines */
