@@ -22,16 +22,19 @@ final class PluginConfigTest extends TestCase
         );
         $offlineField = $config['config']['bark_offline_level'];
         $loadField = $config['config']['bark_load_level'];
+        $recoveryField = $config['config']['bark_recovery_level'];
 
-        foreach ([$offlineField, $loadField] as $field) {
+        foreach ([$offlineField, $loadField, $recoveryField] as $field) {
             self::assertSame('select', $field['type']);
-            self::assertSame('timeSensitive', $field['default']);
             self::assertSame(
                 ['active', 'timeSensitive', 'critical'],
                 array_column($field['options'], 'value')
             );
         }
 
+        self::assertSame('timeSensitive', $offlineField['default']);
+        self::assertSame('timeSensitive', $loadField['default']);
+        self::assertSame('active', $recoveryField['default']);
         self::assertArrayNotHasKey('bark_level', $config['config']);
         self::assertArrayNotHasKey('notify_load_stale', $config['config']);
     }

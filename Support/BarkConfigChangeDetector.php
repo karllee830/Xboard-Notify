@@ -12,6 +12,7 @@ final class BarkConfigChangeDetector
         'bark_group',
         'bark_offline_level',
         'bark_load_level',
+        'bark_recovery_level',
         'bark_sound',
         'notification_url',
         'archive_notifications',

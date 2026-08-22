@@ -27,18 +27,23 @@ final class BarkConfigChangeDetectorTest extends TestCase
     }
 
     #[Test]
-    public function it_detects_changes_to_either_notification_level(): void
+    public function it_detects_changes_to_each_notification_level(): void
     {
         $before = [
             'bark_offline_level' => 'timeSensitive',
             'bark_load_level' => 'timeSensitive',
+            'bark_recovery_level' => 'active',
         ];
-        $after = [
+        foreach ([
             'bark_offline_level' => 'critical',
             'bark_load_level' => 'active',
-        ];
+            'bark_recovery_level' => 'timeSensitive',
+        ] as $key => $value) {
+            $after = $before;
+            $after[$key] = $value;
 
-        self::assertTrue($this->detector->hasChanged($before, $after));
+            self::assertTrue($this->detector->hasChanged($before, $after));
+        }
     }
 
     #[Test]

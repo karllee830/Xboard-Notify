@@ -181,23 +181,21 @@ final class MonitorService
             if (!$this->toBool($this->config['recovery_notify'] ?? true)) {
                 AlertState::query()->whereIn('id', $recoveryStates->pluck('id'))->delete();
             } else {
-                foreach ($this->groupStatesByNotificationType($recoveryStates) as $notificationType => $states) {
-                    try {
-                        $this->sendRecovery(
-                            $machine,
-                            $states,
-                            $now,
-                            $this->notificationLevel((string) $notificationType)
-                        );
-                        AlertState::query()->whereIn('id', $states->pluck('id'))->delete();
-                        $result['recoveries_sent']++;
-                    } catch (Throwable $exception) {
-                        $result['errors'][] = sprintf('服务器 #%d 恢复通知推送失败：%s', $machine->id, $exception->getMessage());
-                        Log::warning('Xboard Notify Bark recovery failed', [
-                            'machine_id' => $machine->id,
-                            'message' => $exception->getMessage(),
-                        ]);
-                    }
+                try {
+                    $this->sendRecovery(
+                        $machine,
+                        $recoveryStates,
+                        $now,
+                        $this->recoveryNotificationLevel()
+                    );
+                    AlertState::query()->whereIn('id', $recoveryStates->pluck('id'))->delete();
+                    $result['recoveries_sent'] = 1;
+                } catch (Throwable $exception) {
+                    $result['errors'][] = sprintf('服务器 #%d 恢复通知推送失败：%s', $machine->id, $exception->getMessage());
+                    Log::warning('Xboard Notify Bark recovery failed', [
+                        'machine_id' => $machine->id,
+                        'message' => $exception->getMessage(),
+                    ]);
                 }
             }
         }
@@ -266,6 +264,13 @@ final class MonitorService
         $level = trim((string) ($this->config[$key] ?? $this->config['bark_level'] ?? 'timeSensitive'));
 
         return $level !== '' ? $level : 'timeSensitive';
+    }
+
+    private function recoveryNotificationLevel(): string
+    {
+        $level = trim((string) ($this->config['bark_recovery_level'] ?? 'active'));
+
+        return $level !== '' ? $level : 'active';
     }
 
     /** @param Collection<int, ServerMachine> $machines */
