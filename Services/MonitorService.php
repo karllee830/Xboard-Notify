@@ -263,16 +263,17 @@ final class MonitorService
     private function notificationLevel(string $notificationType): string
     {
         $key = $notificationType === 'offline' ? 'bark_offline_level' : 'bark_load_level';
-        $level = trim((string) ($this->config[$key] ?? $this->config['bark_level'] ?? 'timeSensitive'));
+        $default = $notificationType === 'offline' ? 'passive' : 'timeSensitive';
+        $level = trim((string) ($this->config[$key] ?? $this->config['bark_level'] ?? $default));
 
-        return $level !== '' ? $level : 'timeSensitive';
+        return $level !== '' ? $level : $default;
     }
 
     private function recoveryNotificationLevel(): string
     {
-        $level = trim((string) ($this->config['bark_recovery_level'] ?? 'active'));
+        $level = trim((string) ($this->config['bark_recovery_level'] ?? 'passive'));
 
-        return $level !== '' ? $level : 'active';
+        return $level !== '' ? $level : 'passive';
     }
 
     /** @param Collection<int, ServerMachine> $machines */

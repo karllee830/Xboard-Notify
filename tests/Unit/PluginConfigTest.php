@@ -12,7 +12,7 @@ final class PluginConfigTest extends TestCase
 {
     /** @throws JsonException */
     #[Test]
-    public function bark_notification_levels_are_separate_selects_with_normal_level(): void
+    public function bark_notification_levels_are_separate_selects_with_silent_level(): void
     {
         $config = json_decode(
             (string) file_get_contents(dirname(__DIR__, 2) . '/config.json'),
@@ -27,14 +27,14 @@ final class PluginConfigTest extends TestCase
         foreach ([$offlineField, $loadField, $recoveryField] as $field) {
             self::assertSame('select', $field['type']);
             self::assertSame(
-                ['active', 'timeSensitive', 'critical'],
+                ['passive', 'active', 'timeSensitive', 'critical'],
                 array_column($field['options'], 'value')
             );
         }
 
-        self::assertSame('timeSensitive', $offlineField['default']);
+        self::assertSame('passive', $offlineField['default']);
         self::assertSame('timeSensitive', $loadField['default']);
-        self::assertSame('active', $recoveryField['default']);
+        self::assertSame('passive', $recoveryField['default']);
         self::assertArrayNotHasKey('bark_level', $config['config']);
         self::assertArrayNotHasKey('notify_load_stale', $config['config']);
     }

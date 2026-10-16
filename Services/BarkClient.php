@@ -69,11 +69,11 @@ final class BarkClient
 
     private function level(?string $level): string
     {
-        $level = trim((string) ($level ?? $this->config['bark_offline_level'] ?? $this->config['bark_level'] ?? 'timeSensitive'));
+        $level = trim((string) ($level ?? $this->config['bark_offline_level'] ?? $this->config['bark_level'] ?? 'passive'));
 
         return in_array($level, ['active', 'timeSensitive', 'passive', 'critical'], true)
             ? $level
-            : 'timeSensitive';
+            : 'passive';
     }
 
     private function toBool(mixed $value): bool

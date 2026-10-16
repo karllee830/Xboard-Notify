@@ -2,6 +2,13 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.5.3] - 2026-10-17
+
+### Changed
+
+- 所有通知级别下拉框增加静默通知（`passive`）选项。
+- 服务器离线和恢复通知默认使用 `passive`，同步修改运行时兜底级别。
+
 ## [0.5.2] - 2026-08-23
 
 ### Fixed

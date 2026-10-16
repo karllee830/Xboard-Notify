@@ -1,7 +1,7 @@
 {
   "name": "Xboard Notify",
   "code": "xboard_notify",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "feature",
   "description": "监控 Xboard 服务器的在线状态和资源负载，并通过 Bark 推送异常及恢复通知",
   "author": "Xboard-Notify contributors",
@@ -111,10 +111,14 @@
     },
     "bark_offline_level": {
       "type": "select",
-      "default": "timeSensitive",
+      "default": "passive",
       "label": "服务器离线通知级别",
       "description": "选择服务器离线通知使用的 Bark 级别",
       "options": [
+        {
+          "label": "静默通知（passive）",
+          "value": "passive"
+        },
         {
           "label": "普通通知（active）",
           "value": "active"
@@ -136,6 +140,10 @@
       "description": "选择 CPU、内存、Swap 或磁盘过载通知使用的 Bark 级别",
       "options": [
         {
+          "label": "静默通知（passive）",
+          "value": "passive"
+        },
+        {
           "label": "普通通知（active）",
           "value": "active"
         },
@@ -151,10 +159,14 @@
     },
     "bark_recovery_level": {
       "type": "select",
-      "default": "active",
+      "default": "passive",
       "label": "恢复通知级别",
       "description": "服务器离线或负载过载恢复通知分别发送，并统一使用此 Bark 级别",
       "options": [
+        {
+          "label": "静默通知（passive）",
+          "value": "passive"
+        },
         {
           "label": "普通通知（active）",
           "value": "active"
