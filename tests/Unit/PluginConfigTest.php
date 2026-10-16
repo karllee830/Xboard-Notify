@@ -23,8 +23,9 @@ final class PluginConfigTest extends TestCase
         $offlineField = $config['config']['bark_offline_level'];
         $loadField = $config['config']['bark_load_level'];
         $recoveryField = $config['config']['bark_recovery_level'];
+        $testField = $config['config']['bark_test_level'];
 
-        foreach ([$offlineField, $loadField, $recoveryField] as $field) {
+        foreach ([$offlineField, $loadField, $recoveryField, $testField] as $field) {
             self::assertSame('select', $field['type']);
             self::assertSame(
                 ['passive', 'active', 'timeSensitive', 'critical'],
@@ -35,6 +36,7 @@ final class PluginConfigTest extends TestCase
         self::assertSame('passive', $offlineField['default']);
         self::assertSame('timeSensitive', $loadField['default']);
         self::assertSame('passive', $recoveryField['default']);
+        self::assertSame('active', $testField['default']);
         self::assertArrayNotHasKey('bark_level', $config['config']);
         self::assertArrayNotHasKey('notify_load_stale', $config['config']);
     }

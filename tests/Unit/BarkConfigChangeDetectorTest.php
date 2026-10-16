@@ -30,11 +30,13 @@ final class BarkConfigChangeDetectorTest extends TestCase
     public function it_detects_changes_to_each_notification_level(): void
     {
         $before = [
+            'bark_test_level' => 'active',
             'bark_offline_level' => 'timeSensitive',
             'bark_load_level' => 'timeSensitive',
             'bark_recovery_level' => 'active',
         ];
         foreach ([
+            'bark_test_level' => 'passive',
             'bark_offline_level' => 'critical',
             'bark_load_level' => 'active',
             'bark_recovery_level' => 'timeSensitive',

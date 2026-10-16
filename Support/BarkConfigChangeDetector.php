@@ -10,6 +10,7 @@ final class BarkConfigChangeDetector
         'bark_server_url',
         'bark_device_key',
         'bark_group',
+        'bark_test_level',
         'bark_offline_level',
         'bark_load_level',
         'bark_recovery_level',

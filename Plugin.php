@@ -63,10 +63,15 @@ final class Plugin extends AbstractPlugin
             $siteName = (string) admin_setting('app_name', 'Xboard');
         }
 
+        $testLevel = trim((string) ($config['bark_test_level'] ?? 'active'));
+        if (!in_array($testLevel, ['passive', 'active', 'timeSensitive', 'critical'], true)) {
+            $testLevel = 'active';
+        }
+
         (new BarkClient($config))->send(
             sprintf('【%s】Bark 测试成功', $siteName !== '' ? $siteName : 'Xboard'),
             "Xboard Notify 已正确连接 Bark，配置已保存。\n发送时间：" . now()->format('Y-m-d H:i:s'),
-            'active'
+            $testLevel
         );
     }
 
